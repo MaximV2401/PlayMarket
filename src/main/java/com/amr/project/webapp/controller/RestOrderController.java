@@ -6,8 +6,10 @@ import com.amr.project.model.dto.OrderDto;
 import com.amr.project.model.entity.Order;
 import com.amr.project.model.entity.User;
 import com.amr.project.model.enums.Status;
+import com.amr.project.service.abstracts.BillService;
 import com.amr.project.service.abstracts.OrderService;
 import com.amr.project.service.abstracts.UserService;
+import com.qiwi.billpayments.sdk.model.out.BillResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,11 +28,14 @@ public class RestOrderController {
     private final UserService userService;
     private final OrderService orderService;
 
+    private final BillService billService;
+
     @Autowired
-    public RestOrderController(OrderMapper orderMapper, UserService userService, OrderService orderService) {
+    public RestOrderController(OrderMapper orderMapper, UserService userService, OrderService orderService, BillService billService) {
         this.orderMapper = orderMapper;
         this.userService = userService;
         this.orderService = orderService;
+        this.billService = billService;
     }
 
     @GetMapping
@@ -52,4 +57,17 @@ public class RestOrderController {
         order.setStatus(Status.START);
         orderService.persist(order);
     }
+
+    @GetMapping("/pay/test")
+    public BillResponse payTest () {
+        return billService.connectionToQiwi(orderMapper.orderToOrderDto(orderService.findById(1L)));
+    }
+
+    @PostMapping("/pay")
+    public String pay (@RequestParam  Long orderid) {
+        Order order = orderService.findById(orderid);
+        String payUrl = billService.connectionToQiwi(orderMapper.orderToOrderDto(orderService.findById(orderid))).getPayUrl();
+        return payUrl;
+    }
+
 }
