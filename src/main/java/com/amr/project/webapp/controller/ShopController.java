@@ -30,7 +30,7 @@ public class ShopController {
         this.userService = userService;
     }
 
-    @GetMapping("/admin")
+    @GetMapping("/admin/shops")
     public String showShops(Model model) {
         List<Shop> shopList = shopService.findAll();
         User user = (User) SecurityContextHolder.getContext()
